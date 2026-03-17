@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Content Pipeline — OpenClaw</title>
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <!-- Header bar -->
+  <header class="header">
+    <div class="header-brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 4h16v4H4z"/><path d="M4 12h10v4H4z"/><path d="M4 20h6v-4H4z"/>
+        <circle cx="19" cy="18" r="3"/>
+      </svg>
+      <span>Content Pipeline</span>
+    </div>
+
+    <div class="header-controls">
+      <input
+        type="text"
+        id="sourceUrl"
+        class="input-url"
+        placeholder="URL hoặc tên trang Facebook, website..."
+        value=""
+      />
+      <select id="sourceType" class="select-type">
+        <option value="facebook_page">Facebook Page</option>
+        <option value="website">Website</option>
+        <option value="rss">Blog RSS</option>
+      </select>
+      <input
+        type="number"
+        id="limitInput"
+        class="input-limit"
+        placeholder="Số bài"
+        value="10"
+        min="1"
+        max="50"
+      />
+      <button id="scrapeBtn" class="btn btn-primary">
+        <span class="btn-icon">⬇</span>
+        <span class="btn-label">Cào dữ liệu</span>
+      </button>
+    </div>
+
+    <div id="scrapeStatus" class="scrape-status"></div>
+  </header>
+
+  <!-- Toolbar: batch actions -->
+  <div class="toolbar" id="toolbar" style="display:none">
+    <span class="toolbar-count" id="toolbarCount"></span>
+    <div class="toolbar-actions">
+      <button class="btn btn-sm btn-secondary" id="batchRewriteBtn">
+        ✏️ Viết lại tất cả
+      </button>
+      <button class="btn btn-sm btn-accent" id="batchPublishBtn">
+        📤 Đăng tất cả đã viết lại
+      </button>
+    </div>
+  </div>
+
+  <!-- Main content area -->
+  <main class="content" id="content">
+    <!-- Welcome state -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">📡</div>
+      <h2>Bắt đầu bằng cách cào dữ liệu</h2>
+      <p>Nhập URL nguồn và nhấn <strong>Cào dữ liệu</strong> để lấy bài viết.<br/>
+      Hoặc bấm nút bên dưới để xem demo với dữ liệu mẫu.</p>
+      <button class="btn btn-primary" id="loadDemoBtn">
+        🎭 Tải dữ liệu Demo
+      </button>
+    </div>
+
+    <!-- Skeleton loading -->
+    <div class="card-grid" id="skeletonGrid" style="display:none">
+      <div class="card skeleton"></div>
+      <div class="card skeleton"></div>
+      <div class="card skeleton"></div>
+      <div class="card skeleton"></div>
+      <div class="card skeleton"></div>
+      <div class="card skeleton"></div>
+    </div>
+
+    <!-- Cards grid -->
+    <div class="card-grid" id="cardGrid" style="display:none"></div>
+  </main>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Confirm dialog -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none">
+    <div class="modal">
+      <div class="modal-header" id="modalHeader">Xác nhận</div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="modalCancel">Hủy</button>
+        <button class="btn btn-primary" id="modalConfirm">Xác nhận</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
