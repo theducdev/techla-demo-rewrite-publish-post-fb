@@ -1,19 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const fbPublisher = require('../services/fb-publisher');
+const fbPersonalPublisher = require('../services/fb-personal-publisher');
 const { getPost, updatePost } = require('../store');
 
 router.post('/', async (req, res) => {
   const ts = new Date().toISOString();
   try {
-    const { id, content, image_url, page_id } = req.body;
+    const { id, content, image_url, page_id, publish_type } = req.body;
     if (!id || !content) {
       return res.status(400).json({ success: false, error: 'id và content là bắt buộc' });
     }
 
-    console.log(`[${ts}] [publish] id=${id} has_image=${!!image_url}`);
+    console.log(`[${ts}] [publish] id=${id} has_image=${!!image_url} type=${publish_type || 'page'}`);
 
-    const result = await fbPublisher.publish({ content, image_url, page_id });
+    let result;
+    if (publish_type === 'personal') {
+      result = await fbPersonalPublisher.publishPersonal({ content, image_url });
+    } else {
+      result = await fbPublisher.publish({ content, image_url, page_id });
+    }
 
     updatePost(id, {
       status: 'published',

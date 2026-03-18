@@ -40,10 +40,10 @@ const API = {
     });
   },
 
-  publish({ id, content, image_url, page_id }) {
+  publish({ id, content, image_url, page_id, publish_type }) {
     return apiFetch('/api/publish', {
       method: 'POST',
-      body: { id, content, image_url, page_id }
+      body: { id, content, image_url, page_id, publish_type }
     });
   },
 

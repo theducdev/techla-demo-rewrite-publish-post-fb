@@ -280,7 +280,12 @@ function buildCard(post) {
         <button class="btn btn-primary btn-card" data-action="publish" ${!rewritten_content || published_url ? 'disabled' : ''}>
           <span class="btn-icon-static">📤</span>
           <span class="btn-icon-spin">⟳</span>
-          <span class="btn-label">${published_url ? 'Đã đăng' : 'Đăng bài'}</span>
+          <span class="btn-label">${published_url ? 'Đã đăng' : 'Đăng Page'}</span>
+        </button>
+        <button class="btn btn-secondary btn-card" data-action="publish-personal" ${!rewritten_content || published_url ? 'disabled' : ''}>
+          <span class="btn-icon-static">👤</span>
+          <span class="btn-icon-spin">⟳</span>
+          <span class="btn-label">${published_url ? 'Đã đăng' : 'Đăng cá nhân'}</span>
         </button>
       </div>
     </div>
@@ -341,6 +346,7 @@ function bindCardEvents(card, post) {
   card.querySelector('[data-action="rewrite"]').addEventListener('click', () => handleRewriteBtn(card, id));
   card.querySelector('[data-action="genimage"]').addEventListener('click', () => handleGenImageBtn(card, id));
   card.querySelector('[data-action="publish"]').addEventListener('click', () => handlePublishBtn(card, id));
+  card.querySelector('[data-action="publish-personal"]').addEventListener('click', () => handlePublishPersonalBtn(card, id));
 
   // Save edits on blur
   const rewrittenEl = card.querySelector('[data-rewritten-text]');
@@ -410,7 +416,7 @@ async function handlePublishBtn(card, id) {
   setBtnLoading(btn, true, 'Đang đăng...');
 
   try {
-    await doPublish(id);
+    await doPublish(id, 'page');
     refreshCard(id);
     const published = getPost(id);
     const url = published && published.published_url;
@@ -418,6 +424,39 @@ async function handlePublishBtn(card, id) {
       toast(`Đã đăng bài thành công! &nbsp;<a href="${escHtml(url)}" target="_blank" style="color:#fff;text-decoration:underline;font-weight:600;">↗ Xem bài đăng</a>`, 'success', 6000, true);
     } else {
       toast('Đã đăng bài thành công!', 'success');
+    }
+  } catch (err) {
+    toast(`Lỗi đăng bài: ${err.message}`, 'error');
+  } finally {
+    setBtnLoading(btn, false);
+  }
+}
+
+async function handlePublishPersonalBtn(card, id) {
+  const post = getPost(id);
+  if (!post || !post.rewritten_content) {
+    toast('Cần viết lại nội dung trước khi đăng', 'warning');
+    return;
+  }
+
+  const ok = await confirmModal(
+    'Xác nhận đăng bài (Tài khoản cá nhân)',
+    `Đăng bài này lên Facebook bằng tài khoản cá nhân?\n\nNội dung sẽ được đăng bằng phiên bản đã viết lại.`
+  );
+  if (!ok) return;
+
+  const btn = card.querySelector('[data-action="publish-personal"]');
+  setBtnLoading(btn, true, 'Đang đăng...');
+
+  try {
+    await doPublish(id, 'personal');
+    refreshCard(id);
+    const published = getPost(id);
+    const url = published && published.published_url;
+    if (url) {
+      toast(`Đã đăng lên tài khoản cá nhân thành công! &nbsp;<a href="${escHtml(url)}" target="_blank" style="color:#fff;text-decoration:underline;font-weight:600;">↗ Xem bài đăng</a>`, 'success', 6000, true);
+    } else {
+      toast('Đã đăng lên tài khoản cá nhân thành công!', 'success');
     }
   } catch (err) {
     toast(`Lỗi đăng bài: ${err.message}`, 'error');
@@ -435,7 +474,7 @@ async function doRewrite(id) {
   persistPosts();
 }
 
-async function doPublish(id) {
+async function doPublish(id, publish_type = 'page') {
   const post = getPost(id);
   if (!post) throw new Error('Không tìm thấy bài');
 
@@ -450,7 +489,8 @@ async function doPublish(id) {
   const res = await API.publish({
     id,
     content,
-    image_url: post.generated_image || null
+    image_url: post.generated_image || null,
+    publish_type
   });
   updatePost(id, { status: 'published', published_url: res.data.published_url });
   persistPosts();
